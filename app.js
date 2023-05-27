@@ -5,13 +5,17 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 const cors = require('cors')
 
-// 导入路由
+// 导入路由————————————————————————————————————————————————————————————————
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 
+// 导入商品路由
+var productRouter = require('./routes/productsAPI/products')
+
+
 var app = express();
 
-// 允许跨域
+// 允许跨域及其他设置——————————————————————————————————————————————————————
 app.use(cors())
 
 // view engine setup
@@ -25,11 +29,15 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 
-// 使用路由
+// 使用路由——————————————————————————————————————————————————————————————
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 
-// catch 404 and forward to error handler
+// 商品路由
+app.use('/productsapi/pro',productRouter)
+
+
+// catch 404 and forward to error handler———————————————————————————————
 app.use(function(req, res, next) {
   next(createError(404));
 });

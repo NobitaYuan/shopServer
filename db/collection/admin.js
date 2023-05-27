@@ -1,4 +1,4 @@
-const mongoose = require('..//mongoose')
+const mongoose = require('../mongoose')
 const Schema = mongoose.Schema
 const schema = new Schema({
     adminid: { type: String, required: true },
@@ -10,4 +10,4 @@ const schema = new Schema({
     ip: { type: String }
 })
 
-module.exports = mongoose.model('Admin', schema)
+module.exports = mongoose.model('admin', schema)
