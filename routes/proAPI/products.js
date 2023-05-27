@@ -2,8 +2,9 @@ const express = require("express");
 const router = express.Router();
 // Excel表格
 const xlsx = require("node-xlsx");
-// 导入数据规则
+// 导入MongoDB数据规则
 const product = require("../../db/collection/product");
+const search = require("../../db/collection/search");
 // MongoDB查询接口
 const sql = require("../../db/dbAPI");
 // uuid
@@ -20,7 +21,6 @@ router.get("/detail/:proid", (req, res, next) => {
     // 解构赋值获取商品id
     const { proid } = req.params;
     // 查询结果将不包括{ _id: 0, __v: 0 }字段
-
     sql.find(product, { proid }, { _id: 0, __v: 0 }).then((data) => {
         // data一般都是数组
         if (data.length === 0) {
@@ -201,6 +201,89 @@ router.get("/categorybrandprolist", (req, res, next) => {
     }
 });
 
+// 搜索
+router.get("/search", (req, res, next) => {
+    const { keyword } = req.query;
+    const reg = new RegExp(keyword);
+    const count = req.query.count * 1 || 1;
+    const limitNum = req.query.limitNum * 1 || 10;
+
+    sql.paging(
+        product,
+        { $or: [{ proname: reg }, { desc: reg }] }, // 或查询的 语法
+        { _id: 0, __v: 0 },
+        count,
+        limitNum
+    ).then((data) => {
+        // 如果有搜索到商品，收纳搜索的关键词
+        // 如果没有，告知用户暂未搜索到心仪的商品，并且可以给用户其他的推荐商品
+        if (data.length === 0) {
+            // 没有搜索到商品
+            res.send({
+                code: "10008",
+                message: "抱歉，暂未找到相关的商品",
+            });
+        } else {
+            // 检测 关键词 在数据库中(搜索关键词数据库集合)有没有，如果没有，插入并且设置数量为1
+            // 如果有，更新该关键词的数量加1
+            sql.find(search, { keyword }, { _id: 0, __v: 0 }).then((result) => {
+                if (result.length === 0) {
+                    // 没有这个关键词
+                    sql.insert(search, {
+                        wordid: "word_" + uuid.v4(),
+                        keyword: keyword,
+                        num: 1,
+                    }).then(() => {
+                        // 插入成功
+                        res.send({
+                            code: "200",
+                            message: "搜索列表",
+                            data: data, // 搜到了，收纳了，返回搜到的数据
+                        });
+                    });
+                } else {
+                    // 有关键词
+                    // 更新这个关键词的数量 + 1
+                    // 找到唯一值 为条件进行更新
+                    // result [{ wordid:'', keyword: '', num: 1}]
+                    const wordid = result[0].wordid;
+                    sql.update(search, { wordid }, { $inc: { num: 1 } }).then(
+                        () => {
+                            // 更新成功
+                            res.send({
+                                code: "200",
+                                message: "搜索列表",
+                                data: data, // 搜到了，收纳了，返回搜到的数据
+                            });
+                        }
+                    );
+                }
+            });
+        }
+    });
+});
+
+// hotwords搜索
+router.get("/hotword", (req, res, next) => {
+    // 先排序，再取值
+    sql.sort(search, {}, { _id: 0, __v: 0 }, { num: -1 }).then((data) => {
+        if (data.length === 0) {
+            res.send({
+                code: "10009",
+                message: "抱歉，暂无热门搜索排行",
+            });
+        } else {
+            // 截取 当前数组的 12项
+            const arr = data.splice(0, 12);
+            res.send({
+                code: "200",
+                message: "热门搜索排行",
+                data: arr,
+            });
+        }
+    });
+});
+
 // 导入所有商品到数据库
 router.get("/uploadPro", (req, res, next) => {
     const originData = xlsx.parse(`${__dirname}/pro.xlsx`);
@@ -235,7 +318,10 @@ router.get("/uploadPro", (req, res, next) => {
         console.log("数据清空成功");
         sql.insert(product, arr).then(() => {
             console.log("导入所有商品数据成功！");
-            res.send("导入所有商品数据成功！");
+            res.send({
+                code: "200",
+                message: "导入所有商品数据成功！",
+            });
         });
     });
 });
