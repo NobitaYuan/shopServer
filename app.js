@@ -10,7 +10,7 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 
 // 导入商品路由
-var productRouter = require('./routes/productsAPI/products')
+var productRouter = require('./routes/proAPI/products')
 
 
 var app = express();
@@ -34,7 +34,7 @@ app.use('/', indexRouter);
 app.use('/users', usersRouter);
 
 // 商品路由
-app.use('/productsapi/pro',productRouter)
+app.use('/proapi/pro',productRouter)
 
 
 // catch 404 and forward to error handler———————————————————————————————

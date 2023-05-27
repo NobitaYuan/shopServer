@@ -53,7 +53,7 @@ module.exports = {
         });
     },
     // 分页查找
-    pagin(collectionName, whereData, showData, count, limitNum) {
+    paging(collectionName, whereData, showData, count, limitNum) {
         return new Promise((resolve, reject) => {
             collectionName
                 .find(whereData, showData)
