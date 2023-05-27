@@ -11,8 +11,12 @@ var usersRouter = require('./routes/users');
 
 // 导入商品路由
 var productRouter = require('./routes/proAPI/products')
+var cartRouter = require('./routes/proAPI/cart')
 
-
+// 导入用户路由
+var registerRouter = require('./routes/userAPI/register')
+var loginRouter = require('./routes/userAPI/login')
+// express
 var app = express();
 
 // 允许跨域及其他设置——————————————————————————————————————————————————————
@@ -35,6 +39,12 @@ app.use('/users', usersRouter);
 
 // 商品路由
 app.use('/proapi/pro',productRouter)
+// 购物车接口
+app.use('/proapi/cart',cartRouter)
+
+// 用户接口
+app.use('/userapi/register',registerRouter)
+app.use('/userapi/login',loginRouter)
 
 
 // catch 404 and forward to error handler———————————————————————————————

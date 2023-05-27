@@ -12,7 +12,7 @@ const uuid = require("uuid");
 
 // 接口
 router.get("/", (req, res, next) => {
-    // 表名被调用
+    // 表明被调用
     res.send("调用了商品列表接口");
 });
 
@@ -201,7 +201,7 @@ router.get("/categorybrandprolist", (req, res, next) => {
     }
 });
 
-// 搜索
+// 模糊搜索
 router.get("/search", (req, res, next) => {
     const { keyword } = req.query;
     const reg = new RegExp(keyword);
