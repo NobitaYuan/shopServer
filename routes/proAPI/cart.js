@@ -18,11 +18,12 @@ router.get("/", (req, res, next) => {
 
 // 添加商品至购物车
 router.post("/add", (req, res, next) => {
-    let userid = req.body.userid || "user_a341c119-28b3-46f6-bc2e-73eee3568932";
+    let userid = req.body.userid;
+    // let userid = req.body.userid || "user_a341c119-28b3-46f6-bc2e-73eee3568932";
     let { proid, num } = req.body;
     num = num * 1 || 1;
     // console.log(userid, proid, num);
-    if (userid && proid && num) {
+    if (userid != undefined && proid != undefined && num != undefined) {
         sql.find(cart, { userid, proid }, { _id: 0, __v: 0 }).then((data) => {
             if (data.length === 0) {
                 //购物车无商品
@@ -68,7 +69,8 @@ router.post("/add", (req, res, next) => {
 
 // 根据用户id获取用户购物车列表
 router.post("/list", (req, res, next) => {
-    let userid = req.body.userid || "user_a341c119-28b3-46f6-bc2e-73eee3568932";
+    let userid = req.body.userid;
+    // let userid = req.body.userid || "user_a341c119-28b3-46f6-bc2e-73eee3568932";
     if (userid) {
         sql.find(cart, { userid }, { _id: 0, __v: 0 }).then(async (data) => {
             if (data.length === 0) {
@@ -90,7 +92,6 @@ router.post("/list", (req, res, next) => {
                             { _id: 0, __v: 0 }
                         )
                         .then((data1) => {
-            
                             let pushObj = {};
                             // 从cart数据库中提取数据
                             pushObj.cartid = data[i].cartid;
@@ -103,7 +104,12 @@ router.post("/list", (req, res, next) => {
                             pushObj.originprice = data1[0].originprice;
                             pushObj.proid = data1[0].proid;
                             pushObj.discount = data1[0].discount;
- 
+                            pushObj.brand = data1[0].brand;
+                            pushObj.sales = data1[0].sales;
+                            pushObj.desc = data1[0].desc;
+                            pushObj.category = data1[0].category;
+                            pushObj.isseckill = data1[0].isseckill;
+
                             shopArr.push(pushObj);
                         });
                 }
@@ -157,95 +163,94 @@ router.post("/list", (req, res, next) => {
 });
 
 // 更新购物车商品数量
-router.post('/updatenum',(req, res, next)=>{
-    let { cartid, num } = req.body
-    if(cartid && num){
-        sql.update(cart,{cartid},{$set: { num }}).then(()=>{
+router.post("/updatenum", (req, res, next) => {
+    let { cartid, num } = req.body;
+    if (cartid != undefined && num != undefined) {
+        sql.update(cart, { cartid }, { $set: { num } }).then(() => {
             res.send({
-                code:'200',
-                message:'购物车商品数量更新成功'
-            })
-        })
-    }else{
+                code: "200",
+                message: "购物车商品数量更新成功",
+            });
+        });
+    } else {
         res.send({
-            code:'10022',
-            message:'请将cartid或num参数补充完整'
-        })
+            code: "10022",
+            message: "请将cartid或num参数补充完整",
+        });
     }
-})
+});
 
 // 更新购物车单个商品选中状态 单个
-router.post('/selectone',(req, res, next)=>{
-    let { cartid, flag } = req.body
-    if(cartid && flag){
-        sql.update(cart,{cartid},{$set: { flag }}).then(()=>{
+router.post("/selectone", (req, res, next) => {
+    let { cartid, flag } = req.body;
+    if (cartid != undefined && flag != undefined) {
+        sql.update(cart, { cartid }, { $set: { flag } }).then(() => {
             res.send({
-                code:'200',
-                message:'单个购物车商品选中状态更新成功'
-            })
-        })
-    }else{
+                code: "200",
+                message: "单个购物车商品选中状态更新成功",
+            });
+        });
+    } else {
         res.send({
-            code:'10022',
-            message:'请将cartid或flag参数补充完整'
-        })
+            code: "10022",
+            message: "请将cartid或flag参数补充完整",
+        });
     }
-})
+});
 
 // 更新购物车全部商品选中状态 全部
-router.post('/selectall',(req, res, next)=>{
-    let { userid, flag } = req.body
-    if(userid && flag){
+router.post("/selectall", (req, res, next) => {
+    let { userid, flag } = req.body;
+    if (userid != undefined && flag != undefined) {
         // 参数中的1代表全部
-        sql.update(cart,{userid},{$set: { flag }}, 1).then(()=>{
+        sql.update(cart, { userid }, { $set: { flag } }, 1).then(() => {
             res.send({
-                code:'200',
-                message:'全部购物车商品选中状态更新成功'
-            })
-        })
-    }else{
+                code: "200",
+                message: "全部购物车商品选中状态更新成功",
+            });
+        });
+    } else {
         res.send({
-            code:'10022',
-            message:'请将userid或flag参数补充完整'
-        })
+            code: "10022",
+            message: "请将userid或flag参数补充完整",
+        });
     }
-})
-
-
+});
 
 // 删除单条购物车数据
-router.post('/remove',(req, res, next)=>{
-    const {cartid} = req.body
-    if(cartid){
-        sql.delete(cart,{cartid}).then((result)=>{
+router.post("/remove", (req, res, next) => {
+    const { cartid } = req.body;
+    if (cartid) {
+        sql.delete(cart, { cartid }).then((result) => {
             res.send({
-                code:'200',
-                message:'成功删除单条购物车数据'
-            })
-        })
-    }else{
+                code: "200",
+                message: "成功删除单条购物车数据",
+            });
+        });
+    } else {
         res.send({
-            code:'10023',
-            message:'请将cartid参数补充完整'
-        })
+            code: "10023",
+            message: "请将cartid参数补充完整",
+        });
     }
-})
+});
 
 // 删除用户的所有购物车信息
-router.post('/removeall',(req, res, next)=>{
-    const {userid} = req.body
-    if(userid){
-        sql.delete(cart,{userid}).then((result)=>{
+router.post("/removeall", (req, res, next) => {
+    const { userid } = req.body;
+    if (userid != undefined) {
+        // 参数1 代表执行deleteMany()
+        sql.delete(cart, { userid }, 1).then((result) => {
             res.send({
-                code:'200',
-                message:'成功清空购物车'
-            })
-        })
-    }else{
+                code: "200",
+                message: "成功清空购物车",
+            });
+        });
+    } else {
         res.send({
-            code:'10024',
-            message:'请将userid参数补充完整'
-        })
+            code: "10024",
+            message: "请将userid参数补充完整",
+        });
     }
-})
+});
 module.exports = router;
